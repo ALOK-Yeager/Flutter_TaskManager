@@ -54,10 +54,12 @@ class EventNotifier extends StateNotifier<AsyncValue<List<Event>>> {
   Future<void> _loadEvents() async {
     state = const AsyncValue.loading();
     try {
+      // print('Loading events...');
       final events = await _ref.read(getAllEventsProvider)();
       state = AsyncValue.data(events);
-    } catch (e) {
-      state = AsyncValue.error(e.toString(), StackTrace.current);
+    } catch (e, stack) {
+      // print('Error loading events: $e');
+      state = AsyncValue.error(e, stack);
     }
   }
 
@@ -75,7 +77,10 @@ class EventNotifier extends StateNotifier<AsyncValue<List<Event>>> {
 
   Future<void> updateEvent(String id, String title, DateTime dateTime) async {
     final existingEvents = await _ref.read(getAllEventsProvider)();
+
+    // Assuming the event exists since we have the ID
     final event = existingEvents.firstWhere((event) => event.id == id);
+
     final updatedEvent = event.copyWith(
       title: title,
       dateTime: dateTime,

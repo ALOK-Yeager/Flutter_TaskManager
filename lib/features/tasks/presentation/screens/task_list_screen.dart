@@ -22,6 +22,7 @@ class TaskListScreen extends ConsumerWidget {
               child: Text('No tasks yet. Add one!'),
             );
           }
+          // Using ListView.builder for better performance with long lists
           return ListView.builder(
             itemCount: tasks.length,
             itemBuilder: (context, index) {

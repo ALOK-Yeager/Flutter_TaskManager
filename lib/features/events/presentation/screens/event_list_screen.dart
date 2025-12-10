@@ -22,6 +22,7 @@ class EventListScreen extends ConsumerWidget {
               child: Text('No events yet. Add one!'),
             );
           }
+          // Simple list view for now
           return ListView.builder(
             itemCount: events.length,
             itemBuilder: (context, index) {

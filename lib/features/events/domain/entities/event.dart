@@ -12,6 +12,7 @@ class Event with _$Event {
     required DateTime updatedAt,
   }) = _Event;
 
+  // Just a blank event to avoid null checks everywhere
   factory Event.empty() => Event(
         id: '',
         title: '',

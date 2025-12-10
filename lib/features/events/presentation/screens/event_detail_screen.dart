@@ -17,11 +17,47 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
   TimeOfDay? _selectedTime;
   bool _isEditing = false;
   String? _eventId;
+  bool _isInit = true;
 
   @override
   void initState() {
     super.initState();
     _titleController = TextEditingController();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Check if we have arguments passed from the list screen
+    if (_isInit) {
+      final args = ModalRoute.of(context)?.settings.arguments;
+      if (args != null && args is String) {
+        _isEditing = true;
+        _eventId = args;
+        _loadEventData(args);
+      }
+      _isInit = false;
+    }
+  }
+
+  Future<void> _loadEventData(String id) async {
+    try {
+      final event = await ref.read(getEventByIdProvider(id)).call(id);
+      if (mounted) {
+        setState(() {
+          _titleController.text = event.title;
+          _selectedDate = event.dateTime;
+          _selectedTime = TimeOfDay.fromDateTime(event.dateTime);
+        });
+      }
+    } catch (e) {
+      // print('Error loading event: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load event: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -32,15 +68,6 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // If navigating with arguments (editing), extract event ID
-    final Object? args = ModalRoute.of(context)?.settings.arguments;
-    if (args != null && args is String && !_isEditing) {
-      _isEditing = true;
-      _eventId = args;
-      // Load event data here (for editing)
-      // This would require a separate provider to fetch the specific event
-    }
-
     return Scaffold(
       appBar: AppBar(
         title: Text(_isEditing ? 'Edit Event' : 'Add Event'),

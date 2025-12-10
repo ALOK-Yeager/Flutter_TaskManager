@@ -56,14 +56,17 @@ class TaskNotifier extends StateNotifier<AsyncValue<List<Task>>> {
   Future<void> _loadTasks() async {
     state = const AsyncValue.loading();
     try {
+      // print('fetching tasks...');
       final tasks = await _ref.read(getAllTasksProvider)();
       state = AsyncValue.data(tasks);
-    } catch (e) {
-      state = AsyncValue.error(e.toString(), StackTrace.current);
+    } catch (e, stack) {
+      // print('Error loading tasks: $e');
+      state = AsyncValue.error(e, stack);
     }
   }
 
   Future<void> addTask(String title, String description) async {
+    // print('Adding task: $title');
     final newTask = Task(
       id: const Uuid().v4(),
       title: title,
@@ -73,12 +76,15 @@ class TaskNotifier extends StateNotifier<AsyncValue<List<Task>>> {
       updatedAt: DateTime.now(),
     );
     await _ref.read(saveTaskProvider)(newTask);
-    _loadTasks(); // Refresh the list
+    _loadTasks(); // Refresh the list - maybe optimize this later to just add to state?
   }
 
   Future<void> updateTask(String id, String title, String description) async {
     final existingTasks = await _ref.read(getAllTasksProvider)();
+
+    // This might crash if task isn't found, but it should be there
     final task = existingTasks.firstWhere((task) => task.id == id);
+
     final updatedTask = task.copyWith(
       title: title,
       description: description,
