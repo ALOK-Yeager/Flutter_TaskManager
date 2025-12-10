@@ -4,7 +4,7 @@ A Flutter application for managing tasks and events with local persistence.
 
 ## 📥 Download APK
 
-**[Download Latest Debug APK](https://github.com/ALOK-Yeager/Flutter_TaskManager/raw/main/app-debug.apk)**
+**[Download Latest Debug APK](https://github.com/ALOK-Yeager/Flutter_TaskManager/releases/tag/v1.0.0)**
 
 The APK file is located in the repository root as `app-debug.apk`.
 
