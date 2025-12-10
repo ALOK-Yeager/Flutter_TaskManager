@@ -1,30 +1,28 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:task_event_manager/main.dart';
+import 'package:task_event_manager/app/app.dart'; 
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  // Basic smoke test to make sure the app at least boots up
+  testWidgets('App loads and shows Tasks screen', (WidgetTester tester) async {
+    
+    // Need to wrap in ProviderScope because we're using Riverpod
+    // forgot this the first time and it crashed lol
+    await tester.pumpWidget(
+      const ProviderScope(
+        child: TaskEventManagerApp(),
+      ),
+    );
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Let the animations settle
+    await tester.pumpAndSettle();
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
-
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Just checking if the main title exists for now
+    // TODO: Add more specific tests for adding tasks later
+    expect(find.text('Tasks'), findsOneWidget);
+    
+    // Make sure we aren't showing the events screen by default
+    expect(find.text('No events yet'), findsNothing);
   });
 }
