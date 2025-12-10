@@ -1,0 +1,141 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/task_providers.dart';
+import '../../domain/entities/task.dart';
+
+class TaskDetailScreen extends ConsumerStatefulWidget {
+  final String? taskId; // Make this nullable
+
+  const TaskDetailScreen({super.key, this.taskId});
+
+  @override
+  ConsumerState<TaskDetailScreen> createState() => _TaskDetailScreenState();
+}
+
+class _TaskDetailScreenState extends ConsumerState<TaskDetailScreen> {
+  final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _titleController;
+  late final TextEditingController _descriptionController;
+  bool _isEditing = false;
+  Task? _currentTask;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController();
+    _descriptionController = TextEditingController();
+
+    if (widget.taskId != null) {
+      _isEditing = true;
+      _loadTaskData();
+    }
+  }
+
+  Future<void> _loadTaskData() async {
+    try {
+      final task = await ref
+          .read(getTaskByIdProvider(widget.taskId!))
+          .call(widget.taskId!);
+      setState(() {
+        _currentTask = task;
+        _titleController.text = task.title;
+        _descriptionController.text = task.description;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to load task: $e')),
+        );
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_isEditing ? 'Edit Task' : 'Add Task'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: Column(
+            children: [
+              TextFormField(
+                controller: _titleController,
+                decoration: const InputDecoration(
+                  labelText: 'Title *',
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Title is required';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _descriptionController,
+                decoration: const InputDecoration(
+                  labelText: 'Description',
+                  border: OutlineInputBorder(),
+                ),
+                maxLines: 3,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _saveTask,
+                style: ElevatedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 50),
+                ),
+                child: Text(_isEditing ? 'Update Task' : 'Add Task'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _saveTask() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    final title = _titleController.text.trim();
+    final description = _descriptionController.text.trim();
+
+    if (_isEditing && widget.taskId != null) {
+      // Update existing task
+      final updatedTask = _currentTask!.copyWith(
+        title: title,
+        description: description,
+      );
+      await ref.read(updateTaskProvider)(updatedTask);
+    } else {
+      // Create new task
+      final newTask = Task(
+        id: DateTime.now()
+            .millisecondsSinceEpoch
+            .toString(), // Use timestamp as ID
+        title: title,
+        description: description,
+        isCompleted: false,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+      await ref.read(saveTaskProvider)(newTask);
+    }
+
+    if (mounted) {
+      Navigator.pop(context);
+    }
+  }
+}
