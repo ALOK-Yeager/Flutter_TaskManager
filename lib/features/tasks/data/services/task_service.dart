@@ -15,7 +15,7 @@ class TaskService {
   }
 
   Future<void> addTask(Task task) async {
-    await repository.createTask(task);
+    await repository.saveTask(task);
   }
 
   Future<void> modifyTask(Task task) async {
@@ -26,7 +26,7 @@ class TaskService {
     await repository.deleteTask(id);
   }
 
-  Future<void> synchronizeTasks() async {
-    await repository.syncTasks();
-  }
+  // Future<void> synchronizeTasks() async {
+  //   await repository.syncTasks();
+  // }
 }

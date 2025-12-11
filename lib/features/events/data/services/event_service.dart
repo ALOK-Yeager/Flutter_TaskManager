@@ -15,7 +15,7 @@ class EventService {
   }
 
   Future<void> addEvent(Event event) async {
-    await repository.createEvent(event);
+    await repository.saveEvent(event);
   }
 
   Future<void> modifyEvent(Event event) async {
@@ -26,7 +26,7 @@ class EventService {
     await repository.deleteEvent(id);
   }
 
-  Future<void> synchronizeEvents() async {
-    await repository.syncEvents();
-  }
+  // Future<void> synchronizeEvents() async {
+  //   await repository.syncEvents();
+  // }
 }
